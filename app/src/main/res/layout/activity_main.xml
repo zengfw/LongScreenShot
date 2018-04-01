@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.zfw.screenshot.MainActivity">
+
+    <ListView
+        android:id="@+id/img_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:listSelector="#00FFFFFF"
+        android:scrollbars="none"
+        android:divider="@null"
+        />
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_margin="10dp"
+        android:onClick="start"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/logo"/>
+
+</RelativeLayout>
