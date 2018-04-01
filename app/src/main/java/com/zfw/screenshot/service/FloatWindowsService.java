@@ -1,6 +1,5 @@
 package com.zfw.screenshot.service;
 
-import android.annotation.TargetApi;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +13,6 @@ import android.media.ImageReader;
 import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.os.AsyncTaskCompat;
@@ -33,6 +31,8 @@ import com.zfw.screenshot.utils.BitmapCalculateUtils;
 import com.zfw.screenshot.utils.FileUtils;
 import com.zfw.screenshot.utils.ImageUtils;
 import com.zfw.screenshot.utils.PxUtils;
+import com.zfw.screenshot.window.EventListener;
+import com.zfw.screenshot.window.TouchWindow;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,11 +40,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-public class FloatWindowsService extends Service implements EventListener{
+public class FloatWindowsService extends Service implements EventListener {
 
     public static final String TAG = "FloatWindowsService";
 
-//    private MediaProjection mMediaProjection;
+    //    private MediaProjection mMediaProjection;
     private VirtualDisplay mVirtualDisplay;
 
     private static Intent mResultData = null;
@@ -90,7 +90,7 @@ public class FloatWindowsService extends Service implements EventListener{
     }
 
     private void createFloatView() {
-        mGestureDetector = new GestureDetector(getApplicationContext(), new FloatGestrueTouchListener());
+        mGestureDetector = new GestureDetector(getApplicationContext(), new FloatGestureTouchListener());
 
         mLayoutParams = new WindowManager.LayoutParams();
         mWindowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
@@ -142,7 +142,7 @@ public class FloatWindowsService extends Service implements EventListener{
     // 这个是截图结束的标记
     private boolean isStopFlag = false;
 
-    private class FloatGestrueTouchListener implements GestureDetector.OnGestureListener {
+    private class FloatGestureTouchListener implements GestureDetector.OnGestureListener {
         int lastX, lastY;
         int paramX, paramY;
 
@@ -162,15 +162,14 @@ public class FloatWindowsService extends Service implements EventListener{
 
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            Log.e(TAG, "onSingleTapUp");
-            if(!isRunning) {
+            if (!isRunning) {
                 virtualDisplay();
                 isRunning = true;
                 isStop = false;
                 mFloatView.setImageBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.stop));
                 touchWindow.show();
                 startScreenShot();
-            }else {
+            } else {
                 // 点击stop的时候肯定是跑了两次保存截图（而且两次间隔很短）
                 isStopFlag = true;
                 isStop = true;
@@ -222,20 +221,19 @@ public class FloatWindowsService extends Service implements EventListener{
 //            }, 5);
 
         handler.postDelayed(new Runnable() {
-                public void run() {
-                    // capture the screen
-                    // 生成图片保存到本地
-                    startCapture();
+            public void run() {
+                // capture the screen
+                // 生成图片保存到本地
+                startCapture();
 
-                }
-            }, 30);
+            }
+        }, 30);
     }
 
 
     private void createImageReader() {
         // 设置截屏的宽高
         mImageReader = ImageReader.newInstance(mScreenWidth, mScreenHeight, PixelFormat.RGBA_8888, 1);
-
     }
 
     // 在startVirtual() 方法中我们做一件事，就是获取当前屏幕内容
@@ -268,7 +266,7 @@ public class FloatWindowsService extends Service implements EventListener{
      * 最终得到当前屏幕的内容，注意这里mImageReader.getSurface()被传入，屏幕的数据也将会在ImageReader中的Surface中
      */
     private void virtualDisplay() {
-        mVirtualDisplay =  MainActivity.getMediaProjection().createVirtualDisplay("screen-mirror",
+        mVirtualDisplay = MainActivity.getMediaProjection().createVirtualDisplay("screen-mirror",
                 mScreenWidth, mScreenHeight, mScreenDensity, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                 mImageReader.getSurface(), null, null);
     }
@@ -281,8 +279,10 @@ public class FloatWindowsService extends Service implements EventListener{
         if (image == null) {
             startScreenShot();
         } else {
+            // 现在的策略是截一次图就拼一次图，很容易影响下次的滚动截图操作。
+            // 所以突然想到要么就是一次性截图好，然后全部位置标记出来，等截图结束的时候再进行拼接操作。
             SaveTask mSaveTask = new SaveTask();
-            AsyncTaskCompat.executeParallel(mSaveTask, image);
+            mSaveTask.execute(image);
         }
     }
 
@@ -315,43 +315,33 @@ public class FloatWindowsService extends Service implements EventListener{
 
             // -------------------------handler bitmap-----------------------------------------------
 
-            if(!isStopFlag) {
+            // 1.策略一：把Bitmap存到一个集合列表里头。。。最后停止截图的时候再统一处理（不行）
+            // 2.策略二：截一次，处理一次，拼接一次。
+
+            if (!isStopFlag) {
                 // 截取屏幕3/4的图片
                 bitmap = halfTopPartBitmap(bitmap);
                 // 2.第二次滚动截图，首先必须是从下往上滚动
                 // 此时的bitmap是一张大小接近一半的截图
                 tempImage = bitmap;
-                if(finalImage == null) {
+                if (finalImage == null) {
                     finalImage = tempImage;
                 }
-                if(finalImage != tempImage) {
+                if (finalImage != tempImage) {
                     // 方法一
                     int sameHeight = BitmapCalculateUtils.calculateSamePart4(finalImage, tempImage);
                     int cropRetX2 = 0;
                     int cropRetY2 = sameHeight;
                     int cropWidth2 = width;
                     int cropHeight2 = tempImage.getHeight() - sameHeight;
-                    if(cropHeight2 > 0) {
+                    if (cropHeight2 > 0) {
                         tempImage = ImageUtils.imageCrop(tempImage, cropRetX2, cropRetY2, cropWidth2, cropHeight2, false);
                         // 此时的finalImage则是两个图的合并
                         finalImage = ImageUtils.mergeBitmap_TB(finalImage, tempImage, true);
                     }
 
-                    // 方法二
-//                    int sameHeight = BitmapCalculateUtils.calculateSamePart3(finalImage, tempImage);
-//                    int statusHeight2 = ImageUtils.getStatusHeight(getApplicationContext());
-//                    int cropRetX2 = 0;
-//                    int cropRetY2 = tempImage.getHeight() - sameHeight;
-//                    int cropWidth2 = width;
-//                    int cropHeight2 = ImageUtils.ScreenHeight(getApplicationContext()) / 2 - statusHeight2 - sameHeight;
-//                    if(sameHeight != 0) {
-//                        tempImage = ImageUtils.imageCrop(tempImage, cropRetX2, cropRetY2, cropWidth2, sameHeight, false);
-//                        // 此时的finalImage则是两个图的合并
-//                        finalImage = ImageUtils.mergeBitmap_TB(finalImage, tempImage, true);
-//                    }
-
                 }
-            }else {
+            } else {
                 bitmap = halfBottomPartBitmap(bitmap);
 
                 // 方法一
@@ -363,23 +353,11 @@ public class FloatWindowsService extends Service implements EventListener{
                 int cropRetY2 = statusHeight2 + sameHeight;
                 int cropWidth2 = width;
                 int cropHeight2 = tempImage.getHeight() - statusHeight2 - sameHeight;
-                if(cropHeight2 > 0) {
+                if (cropHeight2 > 0) {
                     tempImage = ImageUtils.imageCrop(tempImage, cropRetX2, cropRetY2, cropWidth2, cropHeight2, false);
                     finalImage = ImageUtils.mergeBitmap_TB(finalImage, tempImage, true);
                 }
 
-                // 方法二
-//                tempImage = bitmap;
-//                int sameHeight = BitmapCalculateUtils.calculateSamePart3(finalImage, tempImage);
-//                int statusHeight2 = ImageUtils.getStatusHeight(getApplicationContext());
-//                int cropRetX2 = 0;
-//                int cropRetY2 = tempImage.getHeight() - sameHeight;
-//                int cropWidth2 = width;
-//                int cropHeight2 = ImageUtils.ScreenHeight(getApplicationContext()) / 2 - statusHeight2 - sameHeight;
-//                if(sameHeight != 0) {
-//                    tempImage = ImageUtils.imageCrop(tempImage, cropRetX2, cropRetY2, cropWidth2, sameHeight, false);
-//                    finalImage = ImageUtils.mergeBitmap_TB(finalImage, tempImage, true);
-//                }
 
             }
             bitmap = finalImage;
@@ -390,7 +368,7 @@ public class FloatWindowsService extends Service implements EventListener{
             File fileImage = null;
             if (bitmap != null) {
                 try {
-                    if(isStopFlag) {
+                    if (isStopFlag) {
                         fileImage = new File(FileUtils.getScreenShotsName(getApplicationContext()));
                         if (!fileImage.exists()) {
                             fileImage.createNewFile();
@@ -426,7 +404,7 @@ public class FloatWindowsService extends Service implements EventListener{
         protected void onPostExecute(Bitmap bitmap) {
             super.onPostExecute(bitmap);
             //预览图片
-            if(mFloatView.getVisibility() == View.GONE) {
+            if (mFloatView.getVisibility() == View.GONE) {
                 mFloatView.setVisibility(View.VISIBLE);
                 isRunning = false;
                 isStopFlag = false;
@@ -451,6 +429,7 @@ public class FloatWindowsService extends Service implements EventListener{
 
     /**
      * 截取上半部分的图片
+     *
      * @param bitmap
      * @return
      */
@@ -502,10 +481,9 @@ public class FloatWindowsService extends Service implements EventListener{
 
     private int currTime = 0;
 
-
     @Override
     public void onTouchSuccess(MotionEvent event) {
-        if(isStop)
+        if (isStop)
             return;
         handler.postDelayed(new Runnable() {
             public void run() {
@@ -514,10 +492,6 @@ public class FloatWindowsService extends Service implements EventListener{
             // 这里之所以要延迟100ms是因为要等isStopFlag = true的情况
             // 还有一个需要考虑的原因就是100ms也够bitmap图片拼接处理
         }, 100);
-
-
-
     }
-
 
 }

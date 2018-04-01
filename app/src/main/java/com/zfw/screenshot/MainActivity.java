@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
             filePathList.addAll(FileUtils.getFileList());
             mAdapter.notifyDataSetChanged();
         }
-
     }
 
     @Override
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
         }
-        if(mediaProjectionManager != null) {
+        if (mediaProjectionManager != null) {
             return;
         }
         // How to use MediaProjectionManager
@@ -93,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
 
         switch (requestCode) {
             case REQUEST_MEDIA_PROJECTION:
-
                 if (resultCode == RESULT_OK && data != null) {
+                    // 这个data里头有什么东西？
                     FloatWindowsService.setResultData(data);
                     mediaProjection = this.mediaProjectionManager.getMediaProjection(resultCode, data);
                     startService(new Intent(getApplicationContext(), FloatWindowsService.class));
@@ -102,13 +101,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
         }
-
     }
 
     private static MediaProjection mediaProjection = null;
 
-    public static MediaProjection getMediaProjection()
-    {
+    public static MediaProjection getMediaProjection() {
         return mediaProjection;
     }
 
@@ -116,8 +113,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopService(new Intent(this, FloatWindowsService.class));
-        if (mediaProjection != null)
-        {
+        if (mediaProjection != null) {
             mediaProjection.stop();
             mediaProjection = null;
         }

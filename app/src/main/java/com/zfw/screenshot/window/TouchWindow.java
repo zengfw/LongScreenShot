@@ -1,8 +1,7 @@
-package com.zfw.screenshot.service;
+package com.zfw.screenshot.window;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -11,7 +10,7 @@ import android.view.WindowManager.LayoutParams;
 
 import com.zfw.screenshot.R;
 
-// 这个应该是一个透明的WindowBackground
+// 创建一个透明的窗口WindowBackground
 
 public class TouchWindow implements IWindow {
 
@@ -32,11 +31,6 @@ public class TouchWindow implements IWindow {
         this.layoutParams = new WindowManager.LayoutParams();
         this.layoutParams.type = WindowManager.LayoutParams.TYPE_PHONE;
         this.layoutParams.format = PixelFormat.RGBA_8888;
-
-        // 这个会拦截了全部的touch事件，导致touch事件不能传到下一层
-//        this.layoutParams.flags = LayoutParams.FLAG_NOT_TOUCH_MODAL | LayoutParams.FLAG_NOT_FOCUSABLE;
-
-//        这种可以点击下层的icon了，但是不能 知道什么时候触发touch事件
         this.layoutParams.flags =
                 LayoutParams.FLAG_NOT_TOUCH_MODAL
                         | LayoutParams.FLAG_NOT_FOCUSABLE | LayoutParams.FLAG_NOT_TOUCHABLE
@@ -45,7 +39,6 @@ public class TouchWindow implements IWindow {
         this.floatView = LayoutInflater.from(this.context).inflate(R.layout.full_screen_float_window, null);
         this.floatView.setOnTouchListener(new View.OnTouchListener() {
             public boolean onTouch(View view, MotionEvent event) {
-                Log.e("TouchWindow", "onTouch");
                 TouchWindow.this.listener.onTouchSuccess(event);
                 return false;
             }
