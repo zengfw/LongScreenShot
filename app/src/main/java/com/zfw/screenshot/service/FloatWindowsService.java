@@ -330,6 +330,10 @@ public class FloatWindowsService extends Service implements EventListener {
                 if (finalImage != tempImage) {
                     // 方法一
                     int sameHeight = BitmapCalculateUtils.calculateSamePart4(finalImage, tempImage);
+
+//                    int startY = BitmapCalculateUtils.calculateSamePart(finalImage, tempImage);
+//                    Log.e("startY", String.valueOf(startY));
+
                     int cropRetX2 = 0;
                     int cropRetY2 = sameHeight;
                     int cropWidth2 = width;
@@ -348,6 +352,10 @@ public class FloatWindowsService extends Service implements EventListener {
                 // 此时的bitmap是整个屏幕的截图
                 tempImage = bitmap;
                 int sameHeight = BitmapCalculateUtils.calculateSamePart4(finalImage, tempImage);
+
+//                int startY = BitmapCalculateUtils.calculateSamePart(finalImage, tempImage);
+//                Log.e("startY", String.valueOf(startY));
+
                 int statusHeight2 = ImageUtils.getStatusHeight(getApplicationContext());
                 int cropRetX2 = 0;
                 int cropRetY2 = statusHeight2 + sameHeight;
