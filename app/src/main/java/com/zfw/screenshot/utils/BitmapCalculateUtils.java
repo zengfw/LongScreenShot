@@ -14,7 +14,7 @@ public class BitmapCalculateUtils {
 
         int y1 = h1 - 1;
         int y2 = h2 - 1;
-        int currY = -1;
+        int currY = 0;
 
         bm1.getPixels(pixel_1, 0, len, 0, y1, len, 1);
 
@@ -31,12 +31,15 @@ public class BitmapCalculateUtils {
                         bm1.getPixels(pixel_1, 0, len, 0, y1, len, 1);
                         break;
                     }
+                    if(i == targetH - 1) {
+                        return currY;
+                    }
                 }
-                return currY;
             } else {
-                currY = y2 - 1;
+                currY = y2;
             }
         }
+        // 这个currY只是返回从低currY行开始，bitmap不同
         return currY;
     }
 
