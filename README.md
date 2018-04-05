@@ -4,4 +4,4 @@
 
 效果图：
 
-<img src="https://github.com/zengfw/LongScreenShot/blob/master/image/img_2.png" width=480 height=720 alt="图片名称" align=center />
+<img src="https://github.com/zengfw/LongScreenShot/blob/master/image/img_2.png" alt="图片名称" align=center />
