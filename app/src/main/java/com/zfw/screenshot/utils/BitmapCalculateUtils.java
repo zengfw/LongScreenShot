@@ -8,8 +8,8 @@ import java.util.Random;
 public class BitmapCalculateUtils {
 
 
-    // 拼图核心算法（平均15ms）
-    public static int test2(Bitmap bm1, Bitmap bm2) {
+    // 暂时有个bug，就是一些情况返回0
+    public static int getSameHeight(Bitmap bm1, Bitmap bm2) {
 
         int ret = 0;
         int len = bm1.getWidth();
@@ -28,6 +28,9 @@ public class BitmapCalculateUtils {
                 int count = 50;
                 int flag = 0;
                 for(int i = 0; i < count; i++) {
+                    if (currY2 < 0) {
+                        break;
+                    }
                     bm1.getPixels(pixel_1, 0, len, 0, currY1, len, 1);
                     bm2.getPixels(pixel_2, 0, len, 0, currY2, len, 1);
                     if(isSameRow(pixel_1, pixel_2, len)) {
@@ -48,13 +51,10 @@ public class BitmapCalculateUtils {
                 break;
             }
         }
-
-
         return ret;
     }
 
 
-    // 算法优化后
     public static boolean isSameRow(int[] pixel_1, int[] pixel_2, int length) {
         Random random = new Random();
 //        for (int i = 0; i < 100; i++) {

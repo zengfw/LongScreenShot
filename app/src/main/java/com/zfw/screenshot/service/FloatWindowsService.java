@@ -244,7 +244,7 @@ public class FloatWindowsService extends Service implements EventListener {
                 }
                 if (finalImage != tempImage) {
 
-                    int sameHeight = BitmapCalculateUtils.test2(finalImage, tempImage);
+                    int sameHeight = BitmapCalculateUtils.getSameHeight(finalImage, tempImage);
                     Log.e("SameHeight", String.valueOf(sameHeight));
                     int cropRetX2 = 0;
                     int cropRetY2 = sameHeight;
@@ -263,7 +263,8 @@ public class FloatWindowsService extends Service implements EventListener {
 
                 bitmap = ImageUtils.screenShotBitmap(getApplicationContext(), bitmap, true);
                 tempImage = bitmap;
-                int sameHeight = BitmapCalculateUtils.test2(finalImage, tempImage);
+
+                int sameHeight = BitmapCalculateUtils.getSameHeight(finalImage, tempImage);
 
                 int cropRetX2 = 0;
                 int cropRetY2 = sameHeight;
