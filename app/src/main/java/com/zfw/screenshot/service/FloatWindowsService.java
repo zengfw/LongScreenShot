@@ -329,6 +329,8 @@ public class FloatWindowsService extends Service implements EventListener {
             // -------------------------handler bitmap-----------------------------------------------
 
             if (!isStopFlag) {
+                long st = System.currentTimeMillis();
+
                 // 截取屏幕3/4的图片
                 bitmap = halfTopPartBitmap(bitmap);
                 // 2.第二次滚动截图，首先必须是从下往上滚动
@@ -342,7 +344,10 @@ public class FloatWindowsService extends Service implements EventListener {
 //                    int sameHeight = BitmapCalculateUtils.calculateSamePart4(finalImage, tempImage);
 
                     int sameHeight = BitmapCalculateUtils.test2(finalImage, tempImage);
-
+                    // sameHeight的值之所以为0
+                    // 算法有问题。。。
+                    // 截图有问题。。。
+                    Log.e("SameHeight", String.valueOf(sameHeight));
                     int cropRetX2 = 0;
                     int cropRetY2 = sameHeight;
                     int cropWidth2 = width;
@@ -354,7 +359,12 @@ public class FloatWindowsService extends Service implements EventListener {
                     }
 
                 }
+                long et = System.currentTimeMillis();
+                Log.e("Time1", String.valueOf(et - st));
             } else {
+
+                long st = System.currentTimeMillis();
+
                 bitmap = halfBottomPartBitmap(bitmap);
 
                 tempImage = bitmap;
@@ -372,10 +382,12 @@ public class FloatWindowsService extends Service implements EventListener {
                     finalImage = ImageUtils.mergeBitmap_TB(finalImage, tempImage, true);
                 }
 
+                long et = System.currentTimeMillis();
+                Log.e("Time2", String.valueOf(et - st));
 
             }
+            long st = System.currentTimeMillis();
             bitmap = finalImage;
-
             // -------------------------handler bitmap-----------------------------------------------
             image.close();
             File fileImage = null;
@@ -407,6 +419,8 @@ public class FloatWindowsService extends Service implements EventListener {
                 }
             }
 
+            long et = System.currentTimeMillis();
+            Log.e("Time3", String.valueOf(et - st));
             if (fileImage != null) {
                 return bitmap;
             }
@@ -499,7 +513,7 @@ public class FloatWindowsService extends Service implements EventListener {
     @Override
     public void onTouchSuccess(MotionEvent event) {
 
-        if(isStop)
+        if (isStop)
             return;
         handler.postDelayed(new Runnable() {
             public void run() {

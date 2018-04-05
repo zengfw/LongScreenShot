@@ -75,8 +75,9 @@ public class BitmapCalculateUtils {
         return ret;
     }
 
-    // 拼图核心算法
+    // 拼图核心算法（平均15ms）
     public static int test2(Bitmap bm1, Bitmap bm2) {
+
         int ret = 0;
         int len = bm1.getWidth();
         int h1 = bm1.getHeight();
@@ -101,7 +102,6 @@ public class BitmapCalculateUtils {
                         currY1--;
                         currY2--;
                         if(flag == count) {
-                            Log.e("Start Same Y", "A:" + y1 + ",B:" + y2);
                             return y2;
                         }
                     } else {
@@ -115,6 +115,8 @@ public class BitmapCalculateUtils {
                 break;
             }
         }
+
+
         return ret;
     }
 
@@ -152,7 +154,8 @@ public class BitmapCalculateUtils {
 
     // 算法优化后
     public static boolean isSameRow(int[] pixel_1, int[] pixel_2, int length) {
-//        Random random = new Random();
+        Random random = new Random();
+
 //        for (int i = 0; i < 100; i++) {
 //            int index = random.nextInt(length);
 //            if (pixel_1[index] != pixel_2[index]) {
