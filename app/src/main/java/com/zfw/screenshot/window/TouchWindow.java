@@ -10,8 +10,6 @@ import android.view.WindowManager.LayoutParams;
 
 import com.zfw.screenshot.R;
 
-// 创建一个透明的窗口WindowBackground
-
 public class TouchWindow implements IWindow {
 
     private Context context;

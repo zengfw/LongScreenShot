@@ -39,9 +39,7 @@ public class FileUtils {
         return result;
     }
 
-    //系统保存截图的路径
     public static final String SCREENCAPTURE_PATH = "ScreenCapture" + File.separator + "Screenshots" + File.separator;
-//  public static final String SCREENCAPTURE_PATH = "ZAKER" + File.separator + "Screenshots" + File.separator;
 
     public static final String SCREENSHOT_NAME = "Screenshot";
 
@@ -77,7 +75,7 @@ public class FileUtils {
 
     }
 
-    public static String getScreenShotsName(Context context) {
+    public static String getFileName(Context context) {
 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd-hh-mm-ss");
 

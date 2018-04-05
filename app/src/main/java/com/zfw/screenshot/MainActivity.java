@@ -4,8 +4,6 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
@@ -14,25 +12,24 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
 import com.zfw.screenshot.adapter.ImageListAdapter;
 import com.zfw.screenshot.service.FloatWindowsService;
-import com.zfw.screenshot.utils.BitmapCalculateUtils;
 import com.zfw.screenshot.utils.FileUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
-// 作为一个库的原则之一，就是即插即用，不需要导入任何其他多余的图片。如果想把长截图的功能开源出去，就需要符合这种要求。
 public class MainActivity extends AppCompatActivity {
 
     private ListView img_list;
     private ImageListAdapter mAdapter;
     private List<String> filePathList = new ArrayList<>();
+
+    public final static int REQUEST_CODE_STORAGE = 200;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,24 +45,26 @@ public class MainActivity extends AppCompatActivity {
 
         if (result != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 200);
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE_STORAGE);
         } else {
-            filePathList.clear();
-            filePathList.addAll(FileUtils.getFileList());
-            mAdapter.notifyDataSetChanged();
+            refreshData();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == 200) {
+        if (requestCode == REQUEST_CODE_STORAGE) {
             if (grantResults.length > 0) {
-                filePathList.clear();
-                filePathList.addAll(FileUtils.getFileList());
-                mAdapter.notifyDataSetChanged();
+                refreshData();
             }
         }
+    }
+
+    public void refreshData() {
+        filePathList.clear();
+        filePathList.addAll(FileUtils.getFileList());
+        mAdapter.notifyDataSetChanged();
     }
 
 
@@ -73,11 +72,6 @@ public class MainActivity extends AppCompatActivity {
     MediaProjectionManager mediaProjectionManager;
 
     public void start(View view) {
-
-//        Bitmap bm1 = BitmapFactory.decodeResource(getResources(), R.drawable.img0);
-//        Bitmap bm2 = BitmapFactory.decodeResource(getResources(), R.drawable.img2);
-//        int startY = BitmapCalculateUtils.test2(bm1, bm2);
-//        Log.e("startY", String.valueOf(startY));
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
@@ -103,8 +97,6 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQUEST_MEDIA_PROJECTION:
                 if (resultCode == RESULT_OK && data != null) {
-                    // 这个data里头有什么东西？
-                    FloatWindowsService.setResultData(data);
                     mediaProjection = this.mediaProjectionManager.getMediaProjection(resultCode, data);
                     startService(new Intent(getApplicationContext(), FloatWindowsService.class));
                     moveTaskToBack(false);
@@ -132,9 +124,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        filePathList.clear();
-        filePathList.addAll(FileUtils.getFileList());
-        mAdapter.notifyDataSetChanged();
+        refreshData();
     }
 
 }
