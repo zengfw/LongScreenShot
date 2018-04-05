@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
@@ -12,11 +14,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 
 import com.zfw.screenshot.adapter.ImageListAdapter;
 import com.zfw.screenshot.service.FloatWindowsService;
+import com.zfw.screenshot.utils.BitmapCalculateUtils;
 import com.zfw.screenshot.utils.FileUtils;
 
 import java.util.ArrayList;
@@ -69,6 +73,12 @@ public class MainActivity extends AppCompatActivity {
     MediaProjectionManager mediaProjectionManager;
 
     public void start(View view) {
+
+//        Bitmap bm1 = BitmapFactory.decodeResource(getResources(), R.drawable.img0);
+//        Bitmap bm2 = BitmapFactory.decodeResource(getResources(), R.drawable.img2);
+//        int startY = BitmapCalculateUtils.test2(bm1, bm2);
+//        Log.e("startY", String.valueOf(startY));
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             return;
         }
