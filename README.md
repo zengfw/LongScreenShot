@@ -4,4 +4,4 @@
 
 效果图：
 
-<img src="https://github.com/zengfw/GiftWidget/blob/master/image/demo.gif" alt="图片名称" align=center />
+<img src="https://github.com/zengfw/LongScreenShot/blob/master/image/img_1.png" alt="图片名称" align=center />
