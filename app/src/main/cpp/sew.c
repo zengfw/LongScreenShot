@@ -44,7 +44,7 @@ JNIEXPORT void JNICALL Java_com_zfw_screenshot_utils_SewUtils_merge(
     int *pixels_0 = lockPixel(env, bmp0);
     int *pixels_1 = lockPixel(env, bmp1);
     int *pixels_2 = lockPixel(env, bmp2);
-
+    /* -------------------- merge the difference ----------------------- */
     int index = 0;
     while(index < h0) {
         if(index < h1) {
@@ -54,6 +54,7 @@ JNIEXPORT void JNICALL Java_com_zfw_screenshot_utils_SewUtils_merge(
         }
         index++;
     }
+    /* -------------------- merge the difference ----------------------- */
     unlockPixel(env, bmp0);
     unlockPixel(env, bmp1);
     unlockPixel(env, bmp2);
