@@ -20,6 +20,10 @@ public class SewUtils {
         } else {
             return bmp1;
         }
+        bmp1.recycle();
+        bmp2.recycle();
+        bmp1 = null;
+        bmp2 = null;
         return result;
     }
 

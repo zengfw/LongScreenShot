@@ -21,6 +21,6 @@
         android:onClick="start"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:src="@drawable/logo"/>
+        android:src="@drawable/start_icon"/>
 
 </RelativeLayout>

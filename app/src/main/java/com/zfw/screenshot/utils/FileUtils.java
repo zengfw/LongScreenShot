@@ -81,7 +81,7 @@ public class FileUtils {
 
         String date = simpleDateFormat.format(new Date());
 
-        StringBuffer stringBuffer = new StringBuffer(getScreenShots(context));
+        StringBuilder stringBuffer = new StringBuilder(getScreenShots(context));
         stringBuffer.append(SCREENSHOT_NAME);
         stringBuffer.append("_");
         stringBuffer.append(date);

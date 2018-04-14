@@ -17,6 +17,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -199,7 +200,6 @@ public class FloatWindowsService extends Service implements EventListener {
     private void startCapture() {
         // 这个方法已经被调用过，在获取另外一个新的image之前，请先关闭原有有的image
         Image image = mImageReader.acquireLatestImage();
-
         if (image == null) {
             startScreenShot();
         } else {
@@ -208,7 +208,6 @@ public class FloatWindowsService extends Service implements EventListener {
         }
     }
 
-    private Bitmap tempImage = null;
     private Bitmap finalImage = null;
 
     public class SaveTask extends AsyncTask<Image, Void, Bitmap> {
@@ -229,21 +228,20 @@ public class FloatWindowsService extends Service implements EventListener {
             int rowStride = planes[0].getRowStride();
             int rowPadding = rowStride - pixelStride * width;
             Bitmap bitmap = Bitmap.createBitmap(width + rowPadding / pixelStride, height, Bitmap.Config.ARGB_8888);
+
             bitmap.copyPixelsFromBuffer(buffer);
             if (!isStopFlag) {
-                // 截取屏幕3/4的图片
+                // 截图
                 bitmap = ImageUtils.screenShotBitmap(getApplicationContext(), bitmap, false);
-                tempImage = bitmap;
                 if (finalImage == null) {
-                    finalImage = tempImage;
+                    finalImage = bitmap;
                 }
-                if (finalImage != tempImage) {
-                    finalImage = SewUtils.merge(finalImage, tempImage);
+                if (finalImage != bitmap) {
+                    finalImage = SewUtils.merge(finalImage, bitmap);
                 }
             } else {
                 bitmap = ImageUtils.screenShotBitmap(getApplicationContext(), bitmap, true);
-                tempImage = bitmap;
-                finalImage = SewUtils.merge(finalImage, tempImage);
+                finalImage = SewUtils.merge(finalImage, bitmap);
             }
             bitmap = finalImage;
             image.close();
@@ -252,21 +250,15 @@ public class FloatWindowsService extends Service implements EventListener {
                 try {
                     if (isStopFlag) {
                         fileImage = new File(FileUtils.getFileName(getApplicationContext()));
-                        if (!fileImage.exists()) {
-                            fileImage.createNewFile();
-                        }
                         FileOutputStream out = new FileOutputStream(fileImage);
-                        if (out != null) {
-                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                            out.flush();
-                            out.close();
-                            Intent media = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                            Uri contentUri = Uri.fromFile(fileImage);
-                            media.setData(contentUri);
-                            sendBroadcast(media);
-                        }
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+                        out.flush();
+                        out.close();
+                        Intent media = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                        Uri contentUri = Uri.fromFile(fileImage);
+                        media.setData(contentUri);
+                        sendBroadcast(media);
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -319,15 +311,13 @@ public class FloatWindowsService extends Service implements EventListener {
 
     @Override
     public void onTouchSuccess(MotionEvent event) {
-
-        if (isStop)
+        if (isStop) {
             return;
+        }
         handler.postDelayed(new Runnable() {
             public void run() {
                 startScreenShot();
             }
-            // 这里之所以要延迟100ms是因为要等isStopFlag = true的情况
-            // 还有一个需要考虑的原因就是100ms也够bitmap图片拼接处理
         }, 100);
     }
 
