@@ -17,7 +17,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -27,10 +26,10 @@ import android.widget.ImageView;
 
 import com.zfw.screenshot.MainActivity;
 import com.zfw.screenshot.R;
-import com.zfw.screenshot.utils.BitmapCalculateUtils;
 import com.zfw.screenshot.utils.FileUtils;
 import com.zfw.screenshot.utils.ImageUtils;
 import com.zfw.screenshot.utils.PxUtils;
+import com.zfw.screenshot.utils.SewUtils;
 import com.zfw.screenshot.window.EventListener;
 import com.zfw.screenshot.window.TouchWindow;
 
@@ -183,7 +182,6 @@ public class FloatWindowsService extends Service implements EventListener {
         }, 30);
     }
 
-
     private void createImageReader() {
         // 设置截屏的宽高
         mImageReader = ImageReader.newInstance(mScreenWidth, mScreenHeight, PixelFormat.RGBA_8888, 1);
@@ -232,10 +230,7 @@ public class FloatWindowsService extends Service implements EventListener {
             int rowPadding = rowStride - pixelStride * width;
             Bitmap bitmap = Bitmap.createBitmap(width + rowPadding / pixelStride, height, Bitmap.Config.ARGB_8888);
             bitmap.copyPixelsFromBuffer(buffer);
-
             if (!isStopFlag) {
-                long st = System.currentTimeMillis();
-
                 // 截取屏幕3/4的图片
                 bitmap = ImageUtils.screenShotBitmap(getApplicationContext(), bitmap, false);
                 tempImage = bitmap;
@@ -243,41 +238,13 @@ public class FloatWindowsService extends Service implements EventListener {
                     finalImage = tempImage;
                 }
                 if (finalImage != tempImage) {
-
-                    int sameHeight = BitmapCalculateUtils.getSameHeight(finalImage, tempImage);
-                    Log.e("SameHeight", String.valueOf(sameHeight));
-                    int cropRetX2 = 0;
-                    int cropRetY2 = sameHeight;
-                    int cropWidth2 = width;
-                    int cropHeight2 = tempImage.getHeight() - sameHeight;
-                    if (cropHeight2 > 0) {
-                        tempImage = ImageUtils.bitmapCrop(tempImage, cropRetX2, cropRetY2, cropWidth2, cropHeight2, false);
-                        finalImage = ImageUtils.bitmapMerge(finalImage, tempImage, true);
-                    }
+                    finalImage = SewUtils.merge(finalImage, tempImage);
                 }
-                long et = System.currentTimeMillis();
-                Log.e("Time1", String.valueOf(et - st));
             } else {
-
-                long st = System.currentTimeMillis();
-
                 bitmap = ImageUtils.screenShotBitmap(getApplicationContext(), bitmap, true);
                 tempImage = bitmap;
-
-                int sameHeight = BitmapCalculateUtils.getSameHeight(finalImage, tempImage);
-
-                int cropRetX2 = 0;
-                int cropRetY2 = sameHeight;
-                int cropWidth2 = width;
-                int cropHeight2 = tempImage.getHeight() - sameHeight;
-                if (cropHeight2 > 0) {
-                    tempImage = ImageUtils.bitmapCrop(tempImage, cropRetX2, cropRetY2, cropWidth2, cropHeight2, false);
-                    finalImage = ImageUtils.bitmapMerge(finalImage, tempImage, true);
-                }
-                long et = System.currentTimeMillis();
-                Log.e("Time2", String.valueOf(et - st));
+                finalImage = SewUtils.merge(finalImage, tempImage);
             }
-            long st = System.currentTimeMillis();
             bitmap = finalImage;
             image.close();
             File fileImage = null;
@@ -304,8 +271,6 @@ public class FloatWindowsService extends Service implements EventListener {
                     e.printStackTrace();
                 }
             }
-            long et = System.currentTimeMillis();
-            Log.e("Time3", String.valueOf(et - st));
             if (fileImage != null) {
                 return bitmap;
             }
