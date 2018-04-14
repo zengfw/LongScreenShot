@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -14,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.zfw.screenshot.adapter.ImageListAdapter;
 import com.zfw.screenshot.service.FloatWindowsService;
@@ -30,6 +33,10 @@ public class MainActivity extends AppCompatActivity {
     private List<String> filePathList = new ArrayList<>();
 
     public final static int REQUEST_CODE_STORAGE = 200;
+    /***
+     * 请求悬浮窗权限
+     * */
+    public static final int REQUEST_WINDOW_GRANT = 201;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +80,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void start(View view) {
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            // 动态申请悬浮窗权限
+            if (!Settings.canDrawOverlays(MainActivity.this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                startActivityForResult(intent, REQUEST_WINDOW_GRANT);
+            }
+            else {
+                initMediaProjectionManager();
+            }
+        } else {
+            initMediaProjectionManager();
         }
+
+
+    }
+
+    private void initMediaProjectionManager() {
         if (mediaProjectionManager != null) {
             return;
         }
@@ -98,8 +120,17 @@ public class MainActivity extends AppCompatActivity {
             case REQUEST_MEDIA_PROJECTION:
                 if (resultCode == RESULT_OK && data != null) {
                     mediaProjection = this.mediaProjectionManager.getMediaProjection(resultCode, data);
-                    startService(new Intent(getApplicationContext(), FloatWindowsService.class));
+                    startService(new Intent(MainActivity.this, FloatWindowsService.class));
                     moveTaskToBack(false);
+                }
+                break;
+            case REQUEST_WINDOW_GRANT:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    if (!Settings.canDrawOverlays(MainActivity.this)) {
+                        Toast.makeText(MainActivity.this, "没有打开悬浮权限~，", Toast.LENGTH_SHORT).show();
+                    } else {
+                       initMediaProjectionManager();
+                    }
                 }
                 break;
         }
