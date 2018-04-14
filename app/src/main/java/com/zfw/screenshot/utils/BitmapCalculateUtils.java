@@ -7,7 +7,6 @@ import java.util.Random;
 
 public class BitmapCalculateUtils {
 
-
     // 暂时有个bug，就是一些情况返回0
     public static int getSameHeight(Bitmap bm1, Bitmap bm2) {
 
@@ -15,6 +14,7 @@ public class BitmapCalculateUtils {
         int len = bm1.getWidth();
         int h1 = bm1.getHeight();
         int h2 = bm2.getHeight();
+
         int[] pixel_1 = new int[len];
         int[] pixel_2 = new int[len];
         int y1 = h1 - 1;
@@ -22,7 +22,7 @@ public class BitmapCalculateUtils {
         bm1.getPixels(pixel_1, 0, len, 0, y1, len, 1);
         while (true) {
             bm2.getPixels(pixel_2, 0, len, 0, y2, len, 1);
-            if (isSameRow(pixel_1, pixel_2, len)) {
+            if (SewUtils.isSameRow(pixel_1, pixel_2, len) == 1) {
                 int currY1 = y1 - 1;
                 int currY2 = y2 - 1;
                 int count = 50;
@@ -33,7 +33,7 @@ public class BitmapCalculateUtils {
                     }
                     bm1.getPixels(pixel_1, 0, len, 0, currY1, len, 1);
                     bm2.getPixels(pixel_2, 0, len, 0, currY2, len, 1);
-                    if(isSameRow(pixel_1, pixel_2, len)) {
+                    if(SewUtils.isSameRow(pixel_1, pixel_2, len) == 1) {
                         flag++;
                         currY1--;
                         currY2--;
@@ -54,7 +54,7 @@ public class BitmapCalculateUtils {
         return ret;
     }
 
-
+/*
     public static boolean isSameRow(int[] pixel_1, int[] pixel_2, int length) {
         Random random = new Random();
 //        for (int i = 0; i < 100; i++) {
@@ -70,5 +70,5 @@ public class BitmapCalculateUtils {
         }
         return true;
     }
-
+*/
 }
